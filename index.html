@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo AI2026 — Trung tâm Chỉ huy</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- ApexCharts CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-container">
+          <i data-lucide="compass" class="logo-icon"></i>
+        </div>
+        <div class="title-container">
+          <h1>Demo AI2026</h1>
+          <span class="subtitle" id="current-date">Chủ Nhật, 24 tháng 5, 2026</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="settings-dropdown-wrapper">
+          <button id="btn-settings" class="btn btn-secondary" title="Cấu hình Google API Key">
+            <i data-lucide="settings"></i>
+          </button>
+          <div id="settings-dropdown" class="settings-dropdown glass-card hidden">
+            <h4>Google Sheets API Key</h4>
+            <div class="input-group">
+              <input type="password" id="input-api-key" placeholder="Nhập Google API Key...">
+              <button class="btn btn-primary" id="btn-save-key">Lưu</button>
+            </div>
+            <p class="settings-help">Nhập khóa để đồng bộ trực tiếp từ Google Sheets API v4.</p>
+          </div>
+        </div>
+        <button id="btn-refresh" class="btn btn-secondary">
+          <i data-lucide="refresh-cw" class="icon-spin-hover"></i>
+          <span>Làm mới</span>
+        </button>
+        <button id="btn-folder" class="btn btn-primary">
+          <i data-lucide="folder"></i>
+          <span>Đổi thư mục</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="app-navigation">
+      <div class="tab-list">
+        <button class="nav-tab" data-tab="chi-huy">
+          <i data-lucide="shield-alert"></i>
+          <span>Chỉ huy Tác chiến</span>
+        </button>
+        <button class="nav-tab active" data-tab="van-hanh">
+          <i data-lucide="trending-up"></i>
+          <span>Báo cáo Vận hành</span>
+        </button>
+        <button class="nav-tab" data-tab="nhan-su">
+          <i data-lucide="users"></i>
+          <span>Nhân sự & Tuyển dụng</span>
+        </button>
+      </div>
+      <div class="connection-status">
+        <span class="status-dot online"></span>
+        <span class="status-text">Hệ thống Trực tuyến</span>
+      </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="app-content">
+      
+      <!-- TAB 1: CHỈ HUY TÁC CHIẾN -->
+      <section id="tab-chi-huy-content" class="tab-content hidden">
+        <div class="operations-grid">
+          <div class="card glass-card span-8">
+            <div class="card-header">
+              <h3><i data-lucide="activity"></i> Luồng Sự Kiện Tác Chiến (Thời Gian Thực)</h3>
+              <span class="badge badge-danger">Khẩn cấp</span>
+            </div>
+            <div class="card-body">
+              <div class="timeline" id="operations-timeline">
+                <!-- Populated dynamically via JS -->
+              </div>
+            </div>
+          </div>
+          
+          <div class="card glass-card span-4">
+            <div class="card-header">
+              <h3><i data-lucide="sliders"></i> Cấu Hình Giới Hạn</h3>
+            </div>
+            <div class="card-body">
+              <div class="settings-form">
+                <div class="form-group">
+                  <label>Tỷ lệ GTC Cảnh Báo (%)</label>
+                  <input type="range" min="10" max="90" value="30" class="range-slider" id="threshold-gtc">
+                  <div class="range-values"><span>10%</span><span id="val-gtc">30%</span><span>90%</span></div>
+                </div>
+                <div class="form-group">
+                  <label>Thời gian Đơn Tồn (Ngày)</label>
+                  <input type="range" min="1" max="10" value="5" class="range-slider" id="threshold-backlog">
+                  <div class="range-values"><span>1 ngày</span><span id="val-backlog">5 ngày</span><span>10 ngày</span></div>
+                </div>
+                <button class="btn btn-submit" id="btn-save-settings">Áp dụng Thay Đổi</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: BÁO CÁO VẬN HÀNH (MAIN ACCORDING TO SCREENSHOT) -->
+      <section id="tab-van-hanh-content" class="tab-content">
+        <!-- KPI Statistics Row -->
+        <div class="kpi-grid">
+          <!-- KPI 1 -->
+          <div class="kpi-card" id="kpi-volume">
+            <div class="kpi-title">SẢN LƯỢNG (VOLUME)</div>
+            <div class="kpi-value" id="val-volume">0</div>
+            <div class="kpi-compare">
+              <div class="compare-item"><span>-- vs Hôm qua</span></div>
+              <div class="compare-item"><span>-- vs Tuần trước</span></div>
+              <div class="compare-item"><span>-- vs Tháng trước</span></div>
+            </div>
+          </div>
+          <!-- KPI 2 -->
+          <div class="kpi-card" id="kpi-gtc">
+            <div class="kpi-title">TỶ LỆ GIAO THÀNH CÔNG (GTC)</div>
+            <div class="kpi-value" id="val-gtc-kpi">0%</div>
+            <div class="kpi-compare">
+              <div class="compare-item"><span>-- vs Hôm qua</span></div>
+              <div class="compare-item"><span>-- vs Tuần trước</span></div>
+              <div class="compare-item"><span>-- vs Tháng trước</span></div>
+            </div>
+          </div>
+          <!-- KPI 3 -->
+          <div class="kpi-card" id="kpi-fd">
+            <div class="kpi-title">TỶ LỆ CHUYỂN TRẢ (FD)</div>
+            <div class="kpi-value" id="val-fd">0%</div>
+            <div class="kpi-compare">
+              <div class="compare-item"><span>-- vs Hôm qua</span></div>
+              <div class="compare-item"><span>-- vs Tuần trước</span></div>
+              <div class="compare-item"><span>-- vs Tháng trước</span></div>
+            </div>
+          </div>
+          <!-- KPI 4 -->
+          <div class="kpi-card" id="kpi-backlog">
+            <div class="kpi-title">TỒN ĐỌNG (BACKLOG > 5 NGÀY)</div>
+            <div class="kpi-value" id="val-backlog-kpi">0</div>
+            <div class="kpi-compare">
+              <div class="compare-item"><span>-- vs Hôm qua</span></div>
+              <div class="compare-item"><span>-- vs Tuần trước</span></div>
+              <div class="compare-item"><span>-- vs Tháng trước</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trend Chart & AI Insights Row -->
+        <div class="analytics-row">
+          <!-- Chart Card -->
+          <div class="analytics-card chart-container">
+            <div class="chart-header">
+              <div class="chart-title">
+                <i data-lucide="bar-chart-3" class="chart-icon-label"></i>
+                <span id="chart-title-text">Biểu đồ Xu hướng Vận hành (8 ngày qua)</span>
+              </div>
+              <div class="chart-switchers">
+                <button class="switcher-btn active" data-chart="gtc-fd">GTC / FD</button>
+                <button class="switcher-btn" data-chart="volume">Sản lượng</button>
+                <button class="switcher-btn" data-chart="backlog">Tồn đọng</button>
+              </div>
+            </div>
+            <div class="chart-body">
+              <div id="trend-chart"></div>
+            </div>
+          </div>
+
+          <!-- AI recommendations Card -->
+          <div class="analytics-card ai-container">
+            <div class="ai-header">
+              <i data-lucide="sparkles" class="ai-icon"></i>
+              <h3>Báo cáo Phân tích & Đề xuất (AI-driven)</h3>
+            </div>
+            <div class="ai-body">
+              <div class="ai-section">
+                <h4 class="ai-sec-title highlight"><span class="bullet green"></span>HIGHLIGHTS</h4>
+                <div class="ai-sec-content" id="ai-highlights">
+                  Tỷ lệ giao hàng thành công (GTC) tại tỉnh Tiền Giang tăng trưởng ổn định ở mức cao (đạt trung bình 72%). Các bưu cục phân bổ AM đầy đủ hoạt động rất tối ưu.
+                </div>
+              </div>
+              <div class="ai-section">
+                <h4 class="ai-sec-title lowlight"><span class="bullet red"></span>LOWLIGHTS</h4>
+                <div class="ai-sec-content" id="ai-lowlights">
+                  Tình trạng tồn đọng nghiêm trọng xảy ra tại bưu cục BC 73 Vĩnh Long (41 đơn tồn > 5 ngày). Giao hàng tại Bến Tre có tỷ lệ GTC hiện tại ở mức báo động đỏ (0% tại BC 89).
+                </div>
+              </div>
+              <div class="ai-section">
+                <h4 class="ai-sec-title reason"><i data-lucide="alert-triangle"></i> NGUYÊN NHÂN CHÍNH</h4>
+                <div class="ai-sec-content" id="ai-reasons">
+                  Nhiều bưu cục trọng điểm chưa được phân bổ Area Manager (AM) dẫn đến luồng quản lý lỏng lẻo. Nguy cơ sập luồng hàng tại BC 89, BC QL57 do dồn ứ đơn giao vận.
+                </div>
+              </div>
+              <div class="ai-section">
+                <h4 class="ai-sec-title action"><i data-lucide="check-square"></i> KIẾN NGHỊ HÀNH ĐỘNG</h4>
+                <div class="ai-sec-content" id="ai-actions">
+                  1. Lập tức điều phối AM lâm thời xử lý BC 89 và BC QL57.<br>
+                  2. Kích hoạt tính năng "Nhắc AM" để gửi chỉ thị trực tiếp đến AM Nguyễn Anh Phương xử lý đống 41 đơn tồn đọng của BC 73.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter and grid view -->
+        <div class="details-section">
+          <div class="details-header">
+            <div class="filter-dimension">
+              <span class="section-label">Chi tiết theo chiều thống kê</span>
+              <div class="dimension-pills">
+                <button class="pill-btn" data-dimension="province">Tỉnh</button>
+                <button class="pill-btn" data-dimension="manager">Area Manager (AM)</button>
+                <button class="pill-btn active" data-dimension="bc">Bưu cục (BC)</button>
+              </div>
+            </div>
+            <div class="search-bar-container">
+              <i data-lucide="search" class="search-icon"></i>
+              <input type="text" id="search-input" placeholder="Tìm kiếm theo tên...">
+            </div>
+          </div>
+
+          <!-- Dynamic Grid Container -->
+          <div class="grid-view-container" id="dynamic-grid">
+            <!-- Populated dynamically via app.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: NHÂN SỰ & TUYỂN DỤNG -->
+      <section id="tab-nhan-su-content" class="tab-content hidden">
+        <div class="hr-grid">
+          <div class="card glass-card span-6">
+            <div class="card-header">
+              <h3><i data-lucide="users-round"></i> Thống Kê Nhân Sự</h3>
+            </div>
+            <div class="card-body">
+              <div class="hr-stats-container">
+                <div class="hr-stat-item">
+                  <span class="label">Tổng Nhân Sự</span>
+                  <span class="val" id="hr-total-staff">142</span>
+                </div>
+                <div class="hr-stat-item">
+                  <span class="label">Tài Xế Hoạt Động (Riders)</span>
+                  <span class="val" id="hr-active-riders">118</span>
+                </div>
+                <div class="hr-stat-item">
+                  <span class="label">Đang Tuyển Dụng</span>
+                  <span class="val warning" id="hr-recruiting">12</span>
+                </div>
+              </div>
+              <div class="hr-chart-container">
+                <div id="hr-chart"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card glass-card span-6">
+            <div class="card-header">
+              <h3><i data-lucide="briefcase"></i> Chỉ Tiêu Tuyển Dụng Theo Tỉnh</h3>
+            </div>
+            <div class="card-body">
+              <table class="data-table" id="hr-table">
+                <thead>
+                  <tr>
+                    <th>Tỉnh / Thành</th>
+                    <th>Nhân sự</th>
+                    <th>Tài xế hoạt động</th>
+                    <th>Chỉ tiêu tuyển</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <span>© 2026 Vitality Compass. Bản quyền thuộc về AI2026.</span>
+      </div>
+      <div class="footer-right">
+        <span class="connection-mode">Chế độ: Độc lập (Offline Mock)</span>
+        <span class="divider">|</span>
+        <span>Version 1.0.0</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- 1. History Modal -->
+  <div id="history-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="history"></i>
+          <span id="modal-bc-title">Lịch sử Bưu cục</span>
+        </div>
+        <button class="btn-close-modal" id="btn-close-history">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-stats-summary">
+          <div class="modal-stat-box">
+            <span class="box-label">GTC Trung Bình</span>
+            <span class="box-val" id="modal-avg-gtc">0%</span>
+          </div>
+          <div class="modal-stat-box">
+            <span class="box-label">Tồn Tối Đa</span>
+            <span class="box-val danger" id="modal-max-backlog">0 đơn</span>
+          </div>
+        </div>
+        
+        <div class="modal-chart-container">
+          <div id="modal-history-chart"></div>
+        </div>
+        
+        <div class="timeline-table-container">
+          <table class="timeline-table">
+            <thead>
+              <tr>
+                <th>Ngày</th>
+                <th>Tỷ lệ GTC</th>
+                <th>Sản lượng</th>
+                <th>Đơn Tồn</th>
+              </tr>
+            </thead>
+            <tbody id="modal-history-table-body">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Folder Selector Modal (Mock) -->
+  <div id="folder-modal" class="modal-overlay hidden">
+    <div class="modal-content folder-selector-modal glass-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="folder-open"></i>
+          <span>Chọn thư mục làm việc</span>
+        </div>
+        <button class="btn-close-modal" id="btn-close-folder">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Chọn một thư mục để tải dữ liệu thống kê bưu cục:</p>
+        <div class="folder-tree">
+          <div class="folder-item root">
+            <i data-lucide="database"></i>
+            <span>root_data/</span>
+          </div>
+          <div class="folder-sub-tree">
+            <div class="folder-item active" data-folder="vitality-compass">
+              <i data-lucide="folder"></i>
+              <span>VitalityCompass_AI2026/</span>
+            </div>
+            <div class="folder-item" data-folder="ldn-20pa">
+              <i data-lucide="folder"></i>
+              <span>LDN_20PA_Operational/</span>
+            </div>
+            <div class="folder-item" data-folder="history-logs">
+              <i data-lucide="folder"></i>
+              <span>Archived_Logs/</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="btn-cancel-folder">Hủy</button>
+          <button class="btn btn-primary" id="btn-confirm-folder">Chọn Thư Mục</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="mockData.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
